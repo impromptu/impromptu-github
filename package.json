@@ -25,7 +25,11 @@
     "prepublish": "cake build",
     "test": "mocha test/*.coffee --compilers coffee:coffee-script"
   },
-  "dependencies": {},
+  "dependencies": {
+    "request": "~2.22.0",
+    "async": "~0.2.9",
+    "read": "~1.0.5"
+  },
   "devDependencies": {
     "coffee-script": "~1.6.2",
     "mocha": "~1.8.2",
