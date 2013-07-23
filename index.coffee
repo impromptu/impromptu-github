@@ -12,7 +12,13 @@ module.exports = (Impromptu, register, github) ->
     update: (done) ->
       git.remoteUrl (err, url) ->
         return done err if err
-        done err, url.match rGitHubUrl
+
+        results = url.match rGitHubUrl
+        return done err, null unless results
+
+        done err,
+          user: results[1]
+          repo: results[2]
 
   register 'isGitHub',
     update: (done) ->
@@ -22,12 +28,12 @@ module.exports = (Impromptu, register, github) ->
   register 'remoteUser',
     update: (done) ->
       github._parseRemoteUrl (err, results) ->
-        done err, results && results[1]
+        done err, results?.user
 
   register 'remoteRepo',
     update: (done) ->
       github._parseRemoteUrl (err, results) ->
-        done err, results && results[2]
+        done err, results?.repo
 
   register 'token',
     update: (done) ->
