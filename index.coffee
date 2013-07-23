@@ -36,6 +36,12 @@ module.exports = (Impromptu, register, github) ->
         done err, results?.repo
 
   register 'token',
+    cache: 'global'
+    run: (fn) ->
+      @get (err, token) =>
+        return fn err, token if token
+        @_setThenGet fn
+
     update: (done) ->
       async.waterfall [
         (fn) ->
@@ -65,7 +71,37 @@ module.exports = (Impromptu, register, github) ->
             else
               message = "An unknown error occurred while creating your GitHub token."
 
-            console.log message
             fn new ImpromptuGitHubError message, null
 
       ], done
+
+  requestGitHub = (path, options, done) ->
+    unless done
+      done = options
+      options = null
+
+    github.token (err, token) ->
+      return done err if err
+
+      options ?= {}
+      options.uri = "https://api.github.com/#{path}"
+      options.json = true
+      options.qs =
+        access_token: token
+      request options, done
+
+  register 'ci',
+    cache: 'repository'
+    expire: 60
+    update: (done) ->
+      git.remoteBranch (err, branch) ->
+        return done err, branch if err or not branch
+
+        async.parallel [
+          github._parseRemoteUrl,
+          git.branch
+        ], (err, results) ->
+          [remote, branch] = results
+          requestGitHub "repos/#{remote.user}/#{remote.repo}/statuses/#{branch}", (err, response, body) ->
+            return done err, '' unless body and body.length
+            done err, body[0].state
