@@ -36,7 +36,8 @@
     "should": "~1.2.2"
   },
   "peerDependencies": {
-    "impromptu": "~0.2.5"
+    "impromptu": "~0.2.5",
+    "impromptu-git": "~0.1.6"
   },
   "keywords": []
 }

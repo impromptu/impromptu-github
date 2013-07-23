@@ -3,7 +3,31 @@ read = require 'read'
 request = require 'request'
 
 module.exports = (Impromptu, register, github) ->
+  git = @module.require 'impromptu-git'
+  rGitHubUrl = /^(?:git@github.com:|https:\/\/github.com\/)([^\/]+)\/([^\/]+)\.git/
+
   class ImpromptuGitHubError extends Impromptu.Error
+
+  register '_parseRemoteUrl',
+    update: (done) ->
+      git.remoteUrl (err, url) ->
+        return done err if err
+        done err, url.match rGitHubUrl
+
+  register 'isGitHub',
+    update: (done) ->
+      github._parseRemoteUrl (err, results) ->
+        done err, !!results
+
+  register 'remoteUser',
+    update: (done) ->
+      github._parseRemoteUrl (err, results) ->
+        done err, results && results[1]
+
+  register 'remoteRepo',
+    update: (done) ->
+      github._parseRemoteUrl (err, results) ->
+        done err, results && results[2]
 
   register 'token',
     update: (done) ->
