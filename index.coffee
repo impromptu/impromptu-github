@@ -86,8 +86,8 @@ module.exports = (Impromptu, register, github) ->
       options ?= {}
       options.uri = "https://api.github.com/#{path}"
       options.json = true
-      options.qs =
-        access_token: token
+      options.qs ?= {}
+      options.qs.access_token = token
       request options, done
 
   register 'ci',
@@ -105,3 +105,23 @@ module.exports = (Impromptu, register, github) ->
           requestGitHub "repos/#{remote.user}/#{remote.repo}/statuses/#{branch}", (err, response, body) ->
             return done err, '' unless body and body.length
             done err, body[0].state
+
+  register 'pullRequest',
+    cache: 'repository'
+    expire: 300
+    update: (done) ->
+      git.remoteBranch (err, branch) ->
+        return done err, branch if err or not branch
+
+        async.parallel [
+          github._parseRemoteUrl,
+          git.branch
+        ], (err, results) ->
+          [remote, branch] = results
+          requestGitHub "repos/#{remote.user}/#{remote.repo}/pulls",
+            qs:
+              head: "#{remote.user}:#{branch}"
+          , (err, response, body) ->
+            return done err, '' unless body and body.length
+            done err, body[0].number
+
