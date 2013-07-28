@@ -92,7 +92,7 @@ module.exports = (Impromptu, register, github) ->
 
   register 'ci',
     cache: 'repository'
-    expire: 60
+    expire: 300
     update: (done) ->
       git.remoteBranch (err, branch) ->
         return done err, branch if err or not branch
