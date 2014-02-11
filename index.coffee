@@ -1,12 +1,14 @@
+impromptu = require 'impromptu'
+git = require 'impromptu-git'
+
 async = require 'async'
 read = require 'read'
 request = require 'request'
 
-module.exports = (Impromptu, register, github) ->
-  git = @module.require 'impromptu-git'
+module.exports = impromptu.plugin.create (github) ->
   rGitHubUrl = /^(?:git@github.com:|https:\/\/github.com\/)([^\/]+)\/([^\/]+)\.git/
 
-  register '_parseRemoteUrl',
+  github.register '_parseRemoteUrl',
     update: (done) ->
       git.remoteUrl (err, url) ->
         return done err if err
@@ -18,22 +20,22 @@ module.exports = (Impromptu, register, github) ->
           user: results[1]
           repo: results[2]
 
-  register 'isGitHub',
+  github.register 'isGitHub',
     update: (done) ->
       github._parseRemoteUrl (err, results) ->
         done err, !!results
 
-  register 'remoteUser',
+  github.register 'remoteUser',
     update: (done) ->
       github._parseRemoteUrl (err, results) ->
         done err, results?.user
 
-  register 'remoteRepo',
+  github.register 'remoteRepo',
     update: (done) ->
       github._parseRemoteUrl (err, results) ->
         done err, results?.repo
 
-  register 'token',
+  github.register 'token',
     update: (done) ->
       process.env.IMPROMPTU_GITHUB_TOKEN
 
@@ -52,7 +54,7 @@ module.exports = (Impromptu, register, github) ->
       options.qs.access_token = token
       request options, done
 
-  register 'ci',
+  github.register 'ci',
     cache: 'repository'
     expire: 300
     update: (done) ->
@@ -68,7 +70,7 @@ module.exports = (Impromptu, register, github) ->
             return done err, '' unless body and body.length
             done err, body[0].state
 
-  register 'pullRequest',
+  github.register 'pullRequest',
     cache: 'repository'
     expire: 300
     update: (done) ->
