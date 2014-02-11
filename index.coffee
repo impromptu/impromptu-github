@@ -59,7 +59,7 @@ module.exports = impromptu.plugin.create (github) ->
 
   github.register 'ci',
     cache: 'repository'
-    expire: 300
+    expire: 60
     update: (done) ->
       git.remoteBranch (err, branch) ->
         return done err, branch if err or not branch
@@ -75,7 +75,7 @@ module.exports = impromptu.plugin.create (github) ->
 
   github.register 'pullRequest',
     cache: 'repository'
-    expire: 300
+    expire: 60
     update: (done) ->
       git.remoteBranch (err, branch) ->
         return done err, branch if err or not branch
