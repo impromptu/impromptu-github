@@ -52,6 +52,9 @@ module.exports = impromptu.plugin.create (github) ->
       options.json = true
       options.qs ?= {}
       options.qs.access_token = token
+      options.headers = {
+        'User-Agent': 'Impromptu-GitHub'
+      }
       request options, done
 
   github.register 'ci',
