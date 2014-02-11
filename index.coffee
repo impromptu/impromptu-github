@@ -36,7 +36,7 @@ module.exports = impromptu.plugin.create (github) ->
         done err, results?.repo
 
   github.register 'token',
-    update: (done) ->
+    update: ->
       process.env.IMPROMPTU_GITHUB_TOKEN
 
   requestGitHub = (path, options, done) ->
