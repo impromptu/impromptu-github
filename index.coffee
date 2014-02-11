@@ -77,18 +77,21 @@ module.exports = impromptu.plugin.create (github) ->
     cache: 'repository'
     expire: 60
     update: (done) ->
-      git.remoteBranch (err, branch) ->
-        return done err, branch if err or not branch
+      async.parallel [
+        github._parseRemoteUrl,
+        git.remoteBranch,
+        git.branch
+      ], (err, results) ->
+        return done err, null if err
 
-        async.parallel [
-          github._parseRemoteUrl,
-          git.branch
-        ], (err, results) ->
-          [remote, branch] = results
-          requestGitHub "repos/#{remote.user}/#{remote.repo}/pulls",
-            qs:
-              head: "#{remote.user}:#{branch}"
-          , (err, response, body) ->
-            return done err, '' unless body and body.length
-            done err, body[0].number
+        [remote, remoteBranchWithOrigin, localBranch] = results
+        remoteBranch = remoteBranchWithOrigin.replace(/^[^\/]+\//, '')
+        branch = remoteBranch || localBranch
+
+        requestGitHub "repos/#{remote.user}/#{remote.repo}/pulls",
+          qs:
+            head: "#{remote.user}:#{branch}"
+        , (err, response, body) ->
+          return done err, '' unless body and body.length
+          done err, body[0].number
 
