@@ -45,7 +45,7 @@ module.exports = impromptu.plugin.create (github) ->
       options = null
 
     github.token (err, token) ->
-      return done err if err
+      return done err if err or !token
 
       options ?= {}
       options.uri = "https://api.github.com/#{path}"
