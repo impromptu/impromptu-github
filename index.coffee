@@ -73,6 +73,18 @@ module.exports = impromptu.plugin.create (github) ->
             return done err, '' unless body and body.length
             done err, body[0].state
 
+  requestFirstPullRequest = (remote, branch, state, done) ->
+    requestGitHub "repos/#{remote.user}/#{remote.repo}/pulls",
+      qs:
+        head: "#{remote.user}:#{branch}"
+        state: if state == 'closed' then 'closed' else 'open' # ensures a valid state
+    , (err, response, body) ->
+      if body and body.length
+        done err, body[0]
+      else
+        done err, null
+
+  # TODO: Cache this object instead of just the number.
   github.register 'pullRequest',
     cache: 'repository'
     expire: 60
@@ -88,10 +100,12 @@ module.exports = impromptu.plugin.create (github) ->
         remoteBranch = remoteBranchWithOrigin.replace(/^[^\/]+\//, '')
         branch = remoteBranch || localBranch
 
-        requestGitHub "repos/#{remote.user}/#{remote.repo}/pulls",
-          qs:
-            head: "#{remote.user}:#{branch}"
-        , (err, response, body) ->
-          return done err, '' unless body and body.length
-          done err, body[0].number
+        requestFirstPullRequest remote, branch, 'open', (err, pullRequest) ->
+          return done err, null if err
 
+          # Return the first open pull request we find.
+          return done err, pullRequest.number if pullRequest
+
+          # If we didn't find an open pull request, search for closed ones.
+          requestFirstPullRequest remote, branch, 'closed', (err, pullRequest) ->
+            done err, if pullRequest then pullRequest.number else null
