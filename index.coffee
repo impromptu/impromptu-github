@@ -84,8 +84,7 @@ module.exports = impromptu.plugin.create (github) ->
       else
         done err, null
 
-  # TODO: Cache this object instead of just the number.
-  github.register 'pullRequest',
+  github.register '_pullRequest',
     cache: 'repository'
     expire: 60
     update: (done) ->
@@ -104,8 +103,13 @@ module.exports = impromptu.plugin.create (github) ->
           return done err, null if err
 
           # Return the first open pull request we find.
-          return done err, pullRequest.number if pullRequest
+          return done err, pullRequest if pullRequest
 
           # If we didn't find an open pull request, search for closed ones.
           requestFirstPullRequest remote, branch, 'closed', (err, pullRequest) ->
-            done err, if pullRequest then pullRequest.number else null
+            done err, pullRequest || null
+
+  github.register 'pullRequestNumber',
+    update: (done) ->
+      github._pullRequest (err, pullRequest) ->
+        done err, if pullRequest then pullRequest.number else null
