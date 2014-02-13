@@ -113,3 +113,8 @@ module.exports = impromptu.plugin.create (github) ->
     update: (done) ->
       github._pullRequest (err, pullRequest) ->
         done err, if pullRequest then pullRequest.number else null
+
+  github.register 'pullRequestState',
+    update: (done) ->
+      github._pullRequest (err, pullRequest) ->
+        done err, if pullRequest then pullRequest.state else null
