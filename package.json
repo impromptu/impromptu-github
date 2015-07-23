@@ -27,8 +27,8 @@
     "read": "~1.0.5"
   },
   "peerDependencies": {
-    "impromptu": "~0.2.6",
-    "impromptu-git": "~0.1.7"
+    "impromptu": "~0.3.0-beta.0",
+    "impromptu-git": "~0.2.0-beta.0"
   },
   "keywords": []
 }
