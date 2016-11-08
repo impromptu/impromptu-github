@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+if [[ -z "$IMPROMPTU_TMP" || ! -d "$IMPROMPTU_TMP" ]]; then
+  echo "Error: \$IMPROMPTU_TMP not specified. Please run as an impromptu subcommand:"
+  echo "  > impromptu github"
+  exit 1
+fi
+
+github_uri="https://api.github.com/authorizations"
+current_date=`date +"%D"`
+request_body="{\"scopes\": [\"repo\"], \"note\": \"Impromptu GitHub Plugin ($current_date @ $HOSTNAME)\"}"
+
+read -r -p "GitHub username: " username
+read -r -s -p "GitHub password: " password
+echo "[hidden]"
+one_time_password=""
+
+request_token () {
+  response="$(curl -i -s -S -u "$username:$password" -d "$request_body" $github_uri "$@")"
+
+  # Check
+  if [[ $response =~ \"token\":\ \"([a-zA-Z0-9]+)\" ]]; then
+    token="${BASH_REMATCH[1]}"
+  elif [[ $response =~ "X-GitHub-OTP: required" ]]; then
+    if [[ -z "$one_time_password" ]]; then
+      echo "Your account has two-factor auth enabled."
+    else
+      echo "The one time password was incorrect. Please try again."
+    fi
+
+    read -r -p "One time password (via SMS or device): " one_time_password
+    request_token --header "X-GitHub-OTP: $one_time_password"
+  else
+    echo "============== Error requesting token =============="
+    echo "$response"
+    exit 1
+  fi
+}
+
+request_token
+
+echo "$username:$token" > $IMPROMPTU_TMP/.impromptu-github-credentials
+chmod 600 $IMPROMPTU_TMP/.impromptu-github-credentials

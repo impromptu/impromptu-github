@@ -1,6 +1,7 @@
 var impromptu = require('impromptu')
 var git = require('impromptu-git')
 var async = require('async')
+var fs = require('fs')
 var read = require('read')
 var request = require('request')
 
@@ -55,7 +56,15 @@ module.exports = impromptu.plugin.create(function (github) {
 
   github.register('token', {
     update: function () {
-      return process.env.IMPROMPTU_GITHUB_TOKEN
+      if (process.env.IMPROMPTU_GITHUB_TOKEN) return process.env.IMPROMPTU_GITHUB_TOKEN
+
+      if (process.env.IMPROMPTU_TMP) {
+        var credentialPath = process.env.IMPROMPTU_TMP + '/.impromptu-github-credentials'
+        if (fs.existsSync(credentialPath)) {
+          var credentials = fs.readFileSync(credentialPath).toString().split(':')
+          return credentials[1]
+        }
+      }
     }
   })
 

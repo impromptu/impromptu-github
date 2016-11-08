@@ -21,6 +21,9 @@
     }
   ],
   "main": "index.js",
+  "bin": {
+    "impromptu-github": "./bin/impromptu-github"
+  },
   "dependencies": {
     "request": "~2.22.0",
     "async": "~0.2.9",
