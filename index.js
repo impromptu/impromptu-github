@@ -6,7 +6,7 @@ var read = require('read')
 var request = require('request')
 
 module.exports = impromptu.plugin.create(function (github) {
-  var rGitHubUrl = /^(?:git@github.com:|https:\/\/github.com\/)([^\/]+)\/([^\/]+)\.git/
+  var rGitHubUrl = /^(?:git@github.com:|(?:https|git):\/\/github.com\/)([^\/]+)\/([^\/]+)\.git/
 
   github.register('_parseRemoteUrl', {
     update: function (done) {
