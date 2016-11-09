@@ -17,7 +17,7 @@ module.exports = impromptu.plugin.create(function (github) {
         }
 
         var results = url.match(rGitHubUrl)
-        if (!results) {
+        if (!results || !results[1] || !results[2]) {
           done(err, null)
           return
         }
